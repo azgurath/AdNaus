@@ -38,6 +38,10 @@ def game(draw):
 	# Populate cards on bottom
 	bottom = []
 
+	# Populate top two cards
+	scryCard1 = ""
+	scryCard2 = ""
+
 	# Populate starting hand
 	startingSize = 7
 	decidedOnHand = False
@@ -58,29 +62,26 @@ def game(draw):
 
 	# Scry if mulliganed
 
-	scry = startingSize < 7
-	scry_bottom = True
-	newCard = ""
-	if scry and not have_tron:
-	
-		newCard = random.choice( deck )
+	if startingSize < 7:
+		scryCard1, scryCard2 = scry( field, hand, suspend, deck, bottom, 1 )
+	newCard = scryCard1
 
-		if scry_bottom:
-			deck.remove( newCard )
-			bottom.append( newCard )
-			newCard = ""
-						
 	# Main loop for turns!
 	turn = 0
 	kill = False
 	while not kill:
-
+		
 		# increment turn counter
 		turn += 1
 
 		# untap lands
 		lands.extend( tapped )
 		tapped = []
+
+		print hand
+		print field
+		print lands
+		print tapped
 
 		# decrement suspend counter, play suspended cards at 0 counters
 		for card in suspend:
@@ -95,16 +96,14 @@ def game(draw):
 
 		# draw a card
 
-		# if it's the first card after scrying
-		if (draw and turn == 1) or (not draw and turn == 2):
-			if newCard == "":
+		if turn != 1 or draw:
+			# make sure we draw what's been scryed	
+			if scryCard1 == "":
 				newCard = random.choice( deck )
-			hand.append( newCard )
-			deck.remove( newCard )
-
-		# otherwise
-		elif draw or turn != 1:
-			newCard = random.choice( deck )
+			else:
+				newCard = scryCard1
+				scryCard1 = scryCard2
+				scryCard2 = ""
 			hand.append( newCard )
 			deck.remove( newCard )
 
@@ -119,7 +118,7 @@ def game(draw):
 			if card in {"deceit", "enlight"} and not playedLand:
 				hand.remove( card )
 				tapped.append( card )
-				# scry( hand, field, suspend, deck, lands, tapped, 1 )
+				# scryCard1, scryCard2 = scry( hand, field, suspend, deck, bottom, 1 )
 				playedLand = True
 
 		# play check land
@@ -141,13 +140,51 @@ def game(draw):
 					lands.append( card )
 					playedLand = True
 
-		kill =  len( lands ) > 3
+		# play sleight of hand if possible
+		for land in lands:
+			if land in {"shores", "deceit", "enlight", "coast", "island", "mine"}:
+				lands.remove( land )
+				tapped.append( land )
+				# castSleight( hand, field, suspend, deck )
+		
+		# play serum visions if possible
+		for land in lands:
+			if land in {"shores", "deciet", "enlight", "coast", "island", "mine"}:
+				lands.remove( land )
+				tapped.append( land )
+				# castVisions( hand, field, suspend, deck )
+
+		# play pentad prism if possible
+		if len( lands ) >= 2 and "prism" in hand:
+			tapped.append( lands[0] )
+			tapped.append( lands[1] )
+			del lands[:2]	
+			hand.remove( "prism" )
+			field.append( ("prism", 2) )
+
+		# play phyrexian unlife if possible
+		if len( lands ) >= 3 and "unlife" in hand:
+			canCast = False
+			for land in {"plains", "coast", "enlight", "mine"}:
+				if land in lands and not canCast:
+					canCast = True
+					tapped.append( land )
+					lands.remove( land )
+			if canCast:
+				tapped.append( lands[0] )
+				tapped.append( lands[1] )
+				del lands[:2]
+				hand.remove( "unlife" )
+				field.append( "unlife" )
+
+		kill =  len( lands )  + len( tapped) > 3
 
 		# end turn
 
-	return( turn, startingSize, "Karn" in hand )
+	return( turn, startingSize, len(lands) + len(tapped) )
 
 for i in range( N ):
-	turn, startingSize, have_karn = game( on_the_draw )
+	turn, startingSize, landsNum = game( on_the_draw )
 	print "It took this many turns: ", turn
+	print "There were this many lands in play: ", landsNum
 
