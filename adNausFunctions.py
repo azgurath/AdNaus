@@ -4,8 +4,6 @@ import random
 
 def scry( field, hand, suspend, deck, bottom, num ):
 
-	print "HELLO THERE WOULD YOU LIKE TO BE IN THE FUNCTION?"
-
 	# Pick two cards from the deck
 	card1 = random.choice( deck )
 	deck.remove( card1 )
@@ -68,6 +66,11 @@ def scry( field, hand, suspend, deck, bottom, num ):
 			scryCard1 = "sleight"
 		elif scryCard2 == "":
 			scryCard2 = "sleight"
+	# Put cards kept back in the deck
+	if scryCard1 != "":
+		deck.append( scryCard1 )
+	if scryCard2 != "":
+		deck.append( scryCard2 )
 
 	# But cards not kept on the bottom
 	if scryCard1 != card1:
@@ -84,5 +87,3 @@ def castSleight( field, hand, suspend, deck, bottom ):
 	deck.remove( card1 )
 	card2 = random.choice( deck )
 	deck.remove( card2 )
-
-	
