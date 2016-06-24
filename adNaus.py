@@ -19,7 +19,7 @@ N = int(sys.argv[2])
 
 def game(draw):
 	# Populate deck
-	deck = ["grace", "naus", "unlife", "guide", "visions", "hand", "bloom", "prism", "coast", "shores", "mine", "deceit"]
+	deck = ["grace", "naus", "unlife", "guide", "visions", "sleight", "bloom", "prism", "coast", "shores", "mine", "deceit"]
 	for i in range(2):
 		deck.extend( deck )
 	deck.extend( ["island", "plains", "englight", "enlight", "storm", "storm", "pact", "pact", "pact", "spoils", "spoils", "spoils"] )
@@ -70,7 +70,7 @@ def game(draw):
 	turn = 0
 	kill = False
 	while not kill:
-		
+
 		# increment turn counter
 		turn += 1
 
@@ -143,6 +143,7 @@ def game(draw):
 			if "prism" in card:
 				mana += card[1]
 		mana += len( lands )
+
 		if "naus" in hand:
 			if "unlife" in field and mana >= 5:
 				kill = True
@@ -157,16 +158,18 @@ def game(draw):
 
 		# play sleight of hand if possible
 		for land in lands:
-			if land in {"shores", "deceit", "enlight", "coast", "island", "mine"}:
+			if land in {"shores", "deceit", "enlight", "coast", "island", "mine"} and "sleight" in hand:
 				lands.remove( land )
 				tapped.append( land )
-				# castSleight( hand, field, suspend, deck )
+				hand.remove( "sleight" )
+				castSleight( field, hand, suspend, deck, bottom )
 		
 		# play serum visions if possible
 		for land in lands:
-			if land in {"shores", "deciet", "enlight", "coast", "island", "mine"}:
+			if land in {"shores", "deciet", "enlight", "coast", "island", "mine"} and "visions" in hand:
 				lands.remove( land )
 				tapped.append( land )
+				hand.remove( "visions" )
 				# Draw a card
 				if scryCard1 != "":
 					newCard = scryCard1
@@ -179,13 +182,14 @@ def game(draw):
 				# Scry 2
 				scryCard1, scryCard2 = scry( field, hand, suspend, deck, bottom, 2 )
 
-		# play pentad prism if possible
-		if len( lands ) >= 2 and "prism" in hand:
-			tapped.append( lands[0] )
-			tapped.append( lands[1] )
-			del lands[:2]	
-			hand.remove( "prism" )
-			field.append( ("prism", 2) )
+		# play pentad prism if possible if mana is needed
+		if mana < 6 and len(suspend) == 0:
+			if len( lands ) >= 2 and "prism" in hand:
+				tapped.append( lands[0] )
+				tapped.append( lands[1] )
+				del lands[:2]	
+				hand.remove( "prism" )
+				field.append( ("prism", 2) )
 
 		# play phyrexian unlife if possible
 		if len( lands ) >= 3 and "unlife" in hand:
@@ -204,7 +208,7 @@ def game(draw):
 
 		# end turn
 
-		if len(deck) < 7:
+		if len(deck) < 10:
 			print "Almost dead to cards..."
 			kill = True
 	return( turn, startingSize, len(lands) + len(tapped) )

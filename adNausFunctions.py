@@ -8,7 +8,10 @@ def scry( field, hand, suspend, deck, bottom, num ):
 	card1 = random.choice( deck )
 	deck.remove( card1 )
 	if num == 2:
-		card2 = random.choice( deck )
+		try:
+			card2 = random.choice( deck )
+		except IndexError:
+			card2 = ""
 		deck.remove( card2 )
 	else:
 		card2 = ""
@@ -66,6 +69,7 @@ def scry( field, hand, suspend, deck, bottom, num ):
 			scryCard1 = "sleight"
 		elif scryCard2 == "":
 			scryCard2 = "sleight"
+
 	# Put cards kept back in the deck
 	if scryCard1 != "":
 		deck.append( scryCard1 )
@@ -87,3 +91,91 @@ def castSleight( field, hand, suspend, deck, bottom ):
 	deck.remove( card1 )
 	card2 = random.choice( deck )
 	deck.remove( card2 )
+
+	keptCard = ""
+	botCard = ""
+
+	# Take a combo piece we don't have
+	if "naus" in {card1, card2}  and "naus" not in hand:
+		keptCard = "naus"
+		if card1 == "naus":
+			botCard = card2
+		else:
+			botCard = card1
+
+	if "grace" in {card1, card2} and "grace" not in hand and "unlife" not in set(field) & set(hand):
+		if keptCard == "":
+			keptCard = "grace"
+			if card1 == "grace":
+				botCard = card2
+			else:
+				botCard = card1
+
+	if "unlife" in {card1, card2} and "grace" not in hand and "unlife" not in set(field) & set(hand):
+		if keptCard == "":
+			keptCard = "unlife"
+			if card1 == "unlife":
+				botCard = card2
+			else:
+				botCard = card1
+
+	if "spoils" in {card1, card2} and "naus" not in hand and "spoils" not in hand:
+		if keptCard == "":
+			keptCard = "spoils"
+			if card1 == "spoils":
+				botCard = card2
+			else:
+				botCard = card1
+
+	# Take mana if we need it
+	if "bloom" in {card1, card2} and "bloom" not in hand and "bloom" not in suspend:
+		if "prism" not in set(hand) & set(field) or len( lands ) + len( tapped ) < 2:
+			if keptCard == "":
+				keptCard = "bloom"
+				if card1 == "bloom":
+					botCard = card2
+				else:
+					botCard = card1
+
+	if "prism" in {card1, card2} and "bloom" not in hand and "bloom" not in suspend:
+		if "prism" not in set(hand) & set(field):
+			if keptCard == "":
+				keptCard = "prism"
+				if card1 == "prism":
+					botCard = card2
+				else:
+					botCard = card1
+
+	# Take dig
+	if "visions" in {card1, card2}:
+		if keptCard == "":
+			keptCard = "visions"
+			if card1 == "visions":
+				botCard = card2
+			else:
+				botCard = card1
+
+	if "sleight" in {card1, card2}:
+		if keptCard == "":
+			keptCard = "sleight"
+			if card1 == "sleight":
+				botCard = card2
+			else:
+				botCard = card1
+
+	# If still haven't found anything, take anything other than storm
+	if keptCard == "":
+		if card1 == "storm":
+			keptCard = card2
+			botCard = card1
+		if card2 == "storm":
+			keptCard = card1
+			botCard = card2
+
+	if keptCard == "":
+		keptCard = card1
+		botCard = card2
+
+	# Put kept card in hand, bottom card on bottom of deck
+	hand.append( keptCard )
+	bottom.append( botCard )
