@@ -8,10 +8,7 @@ def scry( field, hand, suspend, deck, bottom, num ):
 	card1 = random.choice( deck )
 	deck.remove( card1 )
 	if num == 2:
-		try:
-			card2 = random.choice( deck )
-		except IndexError:
-			card2 = ""
+		card2 = random.choice( deck )
 		deck.remove( card2 )
 	else:
 		card2 = ""
@@ -79,8 +76,12 @@ def scry( field, hand, suspend, deck, bottom, num ):
 	# But cards not kept on the bottom
 	if scryCard1 != card1:
 		bottom.append( card1 )
+	elif card1 != "":
+		deck.append( card1 )
 	if scryCard2 != card2:
 		bottom.append( card2 )
+	elif card2 != "":
+		deck.append( card2 )
 
 	return( scryCard1, scryCard2 )
 
@@ -97,7 +98,7 @@ def castSleight( field, hand, suspend, deck, bottom ):
 
 	# Take a combo piece we don't have
 	if "naus" in {card1, card2}  and "naus" not in hand:
-		keptCard = "naus"
+		eptCard = "naus"
 		if card1 == "naus":
 			botCard = card2
 		else:
@@ -179,3 +180,35 @@ def castSleight( field, hand, suspend, deck, bottom ):
 	# Put kept card in hand, bottom card on bottom of deck
 	hand.append( keptCard )
 	bottom.append( botCard )
+
+def castSpoils( hand, scryCard1, scryCard2, deck, cardName ):
+
+	# Count how many cards get exiled
+	totalCards = 0
+	
+	# Remove cards from the deck until you remove the named card
+	if scrCard1 != "":
+		if scryCard1 == cardName:
+			hand.append( cardName )
+			scryCard1 = scryCard2
+			scryCard2 = ""
+			return totalCards
+		scryCard1 = scryCard2
+		scryCard2 = ""
+		totalCards += 1
+
+	if scryCard2 != "":
+		if scryCard1 == cardName:
+			hand.append( cardName )
+			scryCard2 = ""
+			return totalCards
+		scryCard2 = ""
+		totalCard += 1
+
+	cardChosen = random.choice( deck )
+	while cardChosen != cardName:
+		deck.remove( cardChosen )
+		cardChosen = random.choice( deck )
+		totalCards += 1
+
+	return totalCard

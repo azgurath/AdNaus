@@ -52,8 +52,29 @@ def game(draw):
 	# VERY TEMPORARY
 
 	while not decidedOnHand and startingSize > 0:
-	
-		decidedOnHand = True
+
+		handStrength = 0.0
+		handStrength += (7 - startingSize)
+		if "naus" in hand:
+			handStrength += 1
+		if "grace" in hand or "unlife" in hand:
+			handStrength += 1
+		if "bloom" in hand or "prism" in hand:
+			handStrength += 1
+		if "naus" not in hand or( "grace" not in hand and "unlife" not in hand ):
+			if "spoils" in hand:
+				handStrength += 0.5
+		if "visions" in hand:
+			handStrength += 0.5
+		if "sleight" in hand:
+			handStrength += 0.5
+
+		if handStrength >= 3:
+			decidedOnHand = True
+
+		if not decidedOnHand:
+			startingSize -= 1
+			hand = random.sample( deck, startingSize )
 
 	# Take the cards in hand from the deck
 
@@ -102,11 +123,6 @@ def game(draw):
 			hand.append( newCard )
 			deck.remove( newCard )
 
-		# Suspend lotus blooms
-		for card in hand:
-			if card == "bloom":
-				hand.remove( card )
-				suspend.append( [card,3] )
 
 		# play a scry land
 		for card in hand:
@@ -145,10 +161,12 @@ def game(draw):
 		mana += len( lands )
 
 		if "naus" in hand:
-			if "unlife" in field and mana >= 5:
-				kill = True
-			if "grace" in hand and mana >= 6:
-				kill = True
+			if "unlife" in field and mana >= 4:
+				if "guide" in hand or mana >= 5:
+					kill = True
+			if "grace" in hand and mana >= 5:
+				if "guide" in hand or mana >= 6:
+					kill = True
 
 		if "spoils" in hand:
 			if "unlife" in field and mana >= 6:
@@ -177,6 +195,8 @@ def game(draw):
 					scryCard2 = "";
 				else:
 					newCard = random.choice( deck )
+				print newCard
+				print deck
 				hand.append( newCard )
 				deck.remove( newCard )
 				# Scry 2
@@ -205,6 +225,12 @@ def game(draw):
 				del lands[:2]
 				hand.remove( "unlife" )
 				field.append( "unlife" )
+
+		# Suspend lotus blooms
+		for card in hand:
+			if card == "bloom":
+				hand.remove( card )
+				suspend.append( [card,3] )
 
 		# end turn
 
