@@ -22,7 +22,7 @@ def game(draw):
 	deck = ["grace", "naus", "unlife", "guide", "visions", "sleight", "bloom", "prism", "coast", "shores", "mine", "deceit"]
 	for i in range(2):
 		deck.extend( deck )
-	deck.extend( ["island", "plains", "englight", "enlight", "storm", "storm", "pact", "pact", "pact", "spoils", "spoils", "spoils"] )
+	deck.extend( ["island", "plains", "enlight", "enlight", "storm", "storm", "pact", "pact", "pact", "spoils", "spoils", "spoils"] )
 
 	for x in range(60 - len(deck)):
 		deck.append("dead")
@@ -123,6 +123,9 @@ def game(draw):
 			hand.append( newCard )
 			deck.remove( newCard )
 
+		print hand
+		print field
+		print lands
 
 		# play a scry land
 		for card in hand:
@@ -174,6 +177,9 @@ def game(draw):
 			if "grace" in hand and mana >= 7:
 				kill = True
 
+		if( kill ):
+			return( turn, startingSize, len(lands) + len(tapped) )
+
 		# play sleight of hand if possible
 		for land in lands:
 			if land in {"shores", "deceit", "enlight", "coast", "island", "mine"} and "sleight" in hand:
@@ -195,12 +201,27 @@ def game(draw):
 					scryCard2 = "";
 				else:
 					newCard = random.choice( deck )
-				print newCard
-				print deck
 				hand.append( newCard )
 				deck.remove( newCard )
 				# Scry 2
 				scryCard1, scryCard2 = scry( field, hand, suspend, deck, bottom, 2 )
+
+		# play a land if we can
+		if not playedLand:
+			for card in hand:
+				if card in {"deceit", "enlight", "coast", "shores", "island", "plains", "mine"}:
+					hand.remove( card )
+					if card == "deceit" or card == "enlight":
+						tapped.append( card )
+						scryCard1, scryCard2 = scry( field, hand, suspend, deck, bottom, 1 )
+					if card == "island" or card == "plains" or card == "mine":
+						lands.append( card )
+
+					if card == "coast" or card == "shores":
+						if len( lands ) + len( tapped ) <= 2:
+							lands.append( card )
+						else:
+							tapped.append( card )
 
 		# play pentad prism if possible if mana is needed
 		if mana < 6 and len(suspend) == 0:
@@ -240,11 +261,21 @@ def game(draw):
 	return( turn, startingSize, len(lands) + len(tapped) )
 
 killTurn = 0
+turn4Kills = 0
+turn5Kills = 0
 
 for i in range( N ):
 	turn, startingSize, landsNum = game( on_the_draw )
 	killTurn += turn
+	if turn == 4:
+		turn4Kills += 1
+	if turn == 5:
+		turn5Kills += 1
 
 killTurn = killTurn / float( N )
+turn4Kills = turn4Kills / float( N ) * 100
+turn5Kills = turn5Kills / float( N ) * 100
+print "Kill on turn 4: ", turn4Kills
+print "Kill on turn 5: ", turn5Kills
 print "Average kill on turn: ", killTurn
 
